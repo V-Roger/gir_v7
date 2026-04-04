@@ -1,0 +1,88 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { urlFor } from "../../lib/sanity/image";
+import { GALLERY_BY_SLUG_QUERY, GALLERY_SLUGS_QUERY, SITE_SETTINGS_QUERY } from "../../lib/sanity/queries";
+import type { GalleryDetail, SiteSettings } from "../../lib/sanity/types";
+import { sanityClient } from "sanity:client";
+
+export async function getStaticPaths() {
+  let slugs: { slug: string }[] = [];
+  try {
+    slugs = (await sanityClient.fetch(GALLERY_SLUGS_QUERY)) ?? [];
+  } catch {
+    slugs = [];
+  }
+  return slugs.filter((s) => s.slug).map((s) => ({ params: { slug: s.slug } }));
+}
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect("/404");
+}
+
+let settings: SiteSettings | null = null;
+let gallery: GalleryDetail | null = null;
+
+try {
+  settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
+  gallery = await sanityClient.fetch(GALLERY_BY_SLUG_QUERY, { slug });
+} catch (err) {
+  console.warn("Sanity fetch failed", err);
+}
+
+const siteTitle = settings?.title ?? "Portfolio";
+
+if (!gallery) {
+  return Astro.redirect("/404");
+}
+---
+
+<Layout
+  title={`${gallery.title} — ${siteTitle}`}
+  siteTitle={siteTitle}
+  description={gallery.description}
+>
+  <nav class="mb-12 text-sm text-neutral-500">
+    <a href="/" class="transition hover:text-white">
+      Work
+    </a>
+    <span class="mx-2 text-neutral-700">/</span>
+    <span class="text-neutral-300">{gallery.title}</span>
+  </nav>
+
+  {gallery.description ? <p class="mb-16 max-w-2xl text-neutral-400">{gallery.description}</p> : null}
+
+  {
+    !gallery.photos?.length ? (
+      <p class="text-neutral-500">This gallery has no photos yet.</p>
+    ) : (
+      <ul class="flex flex-col gap-20">
+        {gallery.photos.map((photo) => (
+          <li class="space-y-3">
+            {photo.image ? (
+              <figure>
+                <img
+                  src={urlFor(photo.image).width(1600).fit("max").auto("format").url()}
+                  alt={photo.alt ?? photo.title ?? "Photograph"}
+                  width={1600}
+                  height={1067}
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full rounded-sm bg-neutral-900"
+                />
+                {(photo.caption || photo.title) && (
+                  <figcaption class="text-sm text-neutral-500">
+                    {photo.title ? <span class="text-neutral-400">{photo.title}</span> : null}
+                    {photo.title && photo.caption ? <span class="mx-2 text-neutral-700">·</span> : null}
+                    {photo.caption ? photo.caption : null}
+                  </figcaption>
+                )}
+              </figure>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</Layout>

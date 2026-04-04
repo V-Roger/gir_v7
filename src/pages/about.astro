@@ -1,0 +1,45 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { SITE_SETTINGS_QUERY } from "../lib/sanity/queries";
+import type { SiteSettings } from "../lib/sanity/types";
+import { sanityClient } from "sanity:client";
+
+let settings: SiteSettings | null = null;
+
+try {
+  settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
+} catch (err) {
+  console.warn("Sanity fetch failed", err);
+}
+
+const siteTitle = settings?.title ?? "Portfolio";
+---
+
+<Layout title={`About — ${siteTitle}`} siteTitle={siteTitle}>
+  <h1 class="font-display text-4xl text-white md:text-5xl">About</h1>
+
+  {
+    settings?.about ? (
+      <div class="mt-10 max-w-2xl whitespace-pre-wrap text-lg leading-relaxed text-neutral-300">{settings.about}</div>
+    ) : (
+      <p class="mt-10 text-neutral-500">Write your bio in Sanity Studio under Site settings → About.</p>
+    )
+  }
+
+  {
+    settings?.socialLinks?.length ? (
+      <ul class="mt-14 flex flex-wrap gap-6 text-sm uppercase tracking-widest">
+        {settings.socialLinks.map(
+          (link) =>
+            link.url && (
+              <li>
+                <a href={link.url} class="text-neutral-400 transition hover:text-white" rel="noopener noreferrer">
+                  {link.label ?? link.url}
+                </a>
+              </li>
+            ),
+        )}
+      </ul>
+    ) : null
+  }
+</Layout>
