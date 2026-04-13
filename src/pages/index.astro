@@ -1,16 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { urlFor } from "../lib/sanity/image";
-import { GALLERIES_INDEX_QUERY, SITE_SETTINGS_QUERY } from "../lib/sanity/queries";
-import type { GalleryIndexItem, SiteSettings } from "../lib/sanity/types";
+import { SITE_SETTINGS_QUERY } from "../lib/sanity/queries";
+import type { SiteSettings } from "../lib/sanity/types";
 import { sanityClient } from "sanity:client";
 
 let settings: SiteSettings | null = null;
-let galleries: GalleryIndexItem[] = [];
 
 try {
   settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
-  galleries = (await sanityClient.fetch(GALLERIES_INDEX_QUERY)) ?? [];
 } catch (err) {
   console.warn("Sanity fetch failed — check PUBLIC_SANITY_PROJECT_ID and dataset.", err);
 }
@@ -20,48 +18,15 @@ const pageTitle = settings?.tagline ? `${siteTitle} — ${settings.tagline}` : s
 ---
 
 <Layout title={pageTitle} siteTitle={siteTitle} description={settings?.tagline}>
-  <div class="mb-16 max-w-xl">
-    {
-      settings?.tagline ? (
-        <p class="font-display text-3xl leading-snug text-neutral-100 md:text-4xl">{settings.tagline}</p>
-      ) : (
-        <p class="text-neutral-500">Add a tagline in Sanity Studio (Site settings).</p>
-      )
-    }
-  </div>
-
-  {
-    galleries.length === 0 ? (
-      <div class="rounded-lg border border-dashed border-white/15 p-12 text-center text-neutral-500">
-        <p class="mb-2">No galleries yet.</p>
-        <p class="text-sm">Create galleries and photos in Sanity Studio, then rebuild the site.</p>
-      </div>
-    ) : (
-      <ul class="grid gap-10 sm:grid-cols-2">
-        {galleries.map((g) => (
-          <li>
-            <a href={`/galleries/${g.slug}`} class="group block">
-              <div class="relative aspect-[4/3] overflow-hidden rounded-sm bg-neutral-900">
-                {g.cover?.image ? (
-                  <img
-                    src={urlFor(g.cover.image).width(900).height(675).fit("crop").auto("format").url()}
-                    alt={g.cover.alt ?? g.title}
-                    width={900}
-                    height={675}
-                    loading="lazy"
-                    decoding="async"
-                    class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-                  />
-                ) : (
-                  <div class="flex h-full items-center justify-center text-sm text-neutral-600">No cover image</div>
-                )}
-              </div>
-              <h2 class="mt-4 font-display text-xl text-white transition group-hover:text-neutral-300">{g.title}</h2>
-              {g.description ? <p class="mt-1 line-clamp-2 text-sm text-neutral-500">{g.description}</p> : null}
-            </a>
-          </li>
-        ))}
-      </ul>
-    )
-  }
+  {settings?.cover?.image ? (
+    <figure class="h-full w-full flex flex-col items-center justify-center xl:items-end p-4 xl:p-40">
+      <img
+        src={urlFor(settings.cover.image).fit("max").auto("format").url()}
+        alt={settings.cover.alt ?? "Virgil ROGER"}
+        loading="lazy"
+        decoding="async"
+        class="max-h-full max-w-full object-contain"
+      />
+    </figure>
+  ) : null}  
 </Layout>

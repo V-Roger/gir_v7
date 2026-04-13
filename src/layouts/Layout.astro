@@ -19,37 +19,30 @@ const { title = "Portfolio", description, siteTitle = "Portfolio" } = Astro.prop
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     {description ? <meta name="description" content={description} /> : null}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&family=Instrument+Serif&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <title>{title}</title>
   </head>
-  <body class="min-h-screen antialiased">
+  <body class="h-screen w-screen antialiased">
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-neutral-950"
     >
       Skip to content
     </a>
-    <header class="border-b border-white/10">
-      <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8">
-        <a href="/" class="font-display text-2xl tracking-tight text-white transition hover:text-white/80">
-          {siteTitle}
-        </a>
-        <nav class="flex gap-8 text-sm font-medium uppercase tracking-widest text-neutral-400">
-          <a href="/" class="transition hover:text-white">Work</a>
-          <a href="/about" class="transition hover:text-white">About</a>
-        </nav>
-      </div>
+    <header class="fixed w-full xl:w-1/3 left-0 top-0 xl:left-8 xl:top-8 bg-white/80 backdrop-blur-xs z-50 px-4 py-2 border-b border-neutral-900 flex flex-nowrap items-center gap-8 overflow-x-auto">
+      <a href="/" class="h-full flex items-center justify-center font-display text-xl tracking-tight transition mb-1">
+        {siteTitle}&nbsp;/
+      </a>
+      <nav class="h-full flex flex-nowrap items-center justify-center gap-4 text-sm font-medium uppercase tracking-widest">
+        <a href="/work" class="transition">Portfolio</a>
+        <a href="/about" class="transition">Bio</a>
+        <a href="https://shop.virgil-roger.photography" target="_blank" class="transition">Shop</a>
+      </nav>
     </header>
-    <main id="main" class="mx-auto max-w-6xl px-6 py-16">
+    <main id="main" class="h-full w-full">
       <slot />
     </main>
-    <footer class="border-t border-white/10 py-10 text-center text-xs text-neutral-500">
-      <p>Photography portfolio</p>
-    </footer>
   </body>
 </html>

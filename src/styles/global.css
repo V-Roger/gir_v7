@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-sans: "Jost", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Jost", ui-serif, Georgia, serif;
 }
 
 @layer base {
@@ -11,6 +11,37 @@
   }
 
   body {
-    @apply font-sans text-neutral-200 bg-neutral-950;
+    @apply font-sans;
+  }
+}
+
+/* Sanity markdown field output on gallery pages */
+@layer components {
+  .gallery-description > :first-child {
+    margin-top: 0;
+  }
+
+  .gallery-description > :last-child {
+    margin-bottom: 0;
+  }
+
+  .gallery-description p {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
+  }
+
+  .gallery-description a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .gallery-description ul,
+  .gallery-description ol {
+    margin: 0.5em 0;
+    padding-left: 1.35em;
+  }
+
+  .gallery-description li {
+    margin: 0.25em 0;
   }
 }

@@ -16,6 +16,10 @@ export default defineConfig({
       dataset: process.env.PUBLIC_SANITY_DATASET || "production",
       useCdn: false,
       apiVersion: "2024-01-01",
+      // Viewer token: see PRIVATE_SANITY_READ_TOKEN in .env.example.
+      ...(process.env.PRIVATE_SANITY_READ_TOKEN
+        ? { token: process.env.PRIVATE_SANITY_READ_TOKEN }
+        : {}),
     }),
   ],
   vite: {

@@ -1,0 +1,107 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { urlFor } from "../lib/sanity/image";
+import { SITE_SETTINGS_QUERY, GALLERIES_INDEX_QUERY } from "../lib/sanity/queries";
+import type { GalleryIndexItem, SiteSettings } from "../lib/sanity/types";
+import { sanityClient } from "sanity:client";
+import { Image } from 'astro:assets';
+
+let settings: SiteSettings | null = null;
+let galleries: GalleryIndexItem[] = [];
+
+try {
+  settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
+  galleries = await sanityClient.fetch(GALLERIES_INDEX_QUERY);
+} catch (err) {
+  console.warn("Sanity fetch failed — check PUBLIC_SANITY_PROJECT_ID and dataset.", err);
+}
+
+const siteTitle = settings?.title ?? "Portfolio";
+const pageTitle = settings?.tagline ? `${siteTitle} — ${settings.tagline}` : siteTitle;
+
+const defaultGallery = galleries.find((g) => g.cover?.image) ?? galleries[0] ?? null;
+const defaultPreviewImage = defaultGallery?.cover?.image ?? null;
+const defaultPreviewUrl = defaultPreviewImage ? urlFor(defaultPreviewImage).fit("max").auto("format").url() : '';
+const defaultPreviewAlt = defaultGallery?.cover?.alt ?? defaultGallery?.title ?? "Gallery";
+const defaultHref = defaultGallery ? `/galleries/${defaultGallery.slug}` : "#";
+---
+
+<Layout title={pageTitle} siteTitle={siteTitle} description={settings?.tagline}>
+  <section class="w-full h-full pt-12 px-4 xl:px-12 flex flex-nowrap items-center flex-col xl:flex-row gap-12 overflow-y-auto">
+    <aside class="w-full h-full xl:w-1/2 flex flex-col gap-8 overflow-y-auto pt-20 pb-12 pr-8">
+      <ul class="flex flex-col items-end gap-6 text-4xl font-medium">
+        {
+          galleries.map((gallery) => {
+            const previewUrl = gallery.cover?.image
+              ? urlFor(gallery.cover.image).fit("max").auto("format").url()
+              : null;
+            const previewAlt = gallery.cover?.alt ?? gallery.title ?? "Gallery";
+            return (
+              <li class="text-right">
+                <a
+                  href={`/galleries/${gallery.slug}`}
+                  class="work-gallery-preview-trigger transition hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+                  {...(previewUrl ? { "data-preview-url": previewUrl, "data-preview-alt": previewAlt } : {})}
+                >
+                  {gallery.title}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </aside>
+    <section class="w-full h-full xl:overflow-y-auto pb-4 pt-12 flex flex-col gap-8">
+      <a
+        id="work-preview-link"
+        href={defaultHref}
+        class="block h-full w-full min-h-[40vh] xl:min-h-0"
+        aria-label={defaultGallery ? `Open gallery: ${defaultGallery.title}` : undefined}
+      >
+        <figure class="h-full w-full flex flex-col items-center justify-center">
+          <Image
+            id="work-preview-image"
+            src={defaultPreviewUrl}
+            alt={defaultPreviewAlt}
+            class="max-h-full max-w-full object-contain transition-opacity duration-200"
+            width={defaultPreviewImage?.metadata?.dimensions?.width ?? 0}
+            height={defaultPreviewImage?.metadata?.dimensions?.height ?? 0}
+          />
+        </figure>
+      </a>
+    </section>
+  </section>
+
+  <script is:inline>
+    (function () {
+      var img = document.getElementById("work-preview-image");
+      var link = document.getElementById("work-preview-link");
+      if (!img || !link) return;
+
+      function apply(trigger) {
+        var href = trigger.getAttribute("href");
+        if (href) {
+          link.setAttribute("href", href);
+          var title = trigger.textContent?.trim();
+          if (title) link.setAttribute("aria-label", "Open gallery: " + title);
+        }
+        var url = trigger.getAttribute("data-preview-url");
+        if (url) {
+          img.removeAttribute("hidden");
+          img.classList.remove("opacity-0");
+          img.src = url;
+          img.alt = trigger.getAttribute("data-preview-alt") || "Gallery";
+        }
+      }
+
+      document.querySelectorAll(".work-gallery-preview-trigger").forEach(function (el) {
+        el.addEventListener("mouseenter", function () {
+          apply(el);
+        });
+        el.addEventListener("focusin", function () {
+          apply(el);
+        });
+      });
+    })();
+  </script>
+</Layout>

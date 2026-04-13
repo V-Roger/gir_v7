@@ -1,45 +1,94 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { SITE_SETTINGS_QUERY } from "../lib/sanity/queries";
-import type { SiteSettings } from "../lib/sanity/types";
+import { markdownToPlainText, renderMarkdown } from "../lib/markdown";
+import { EXHIBITIONS_QUERY, PUBLICATIONS_QUERY, SITE_SETTINGS_QUERY } from "../lib/sanity/queries";
+import type { Exhibition, Publication, SiteSettings } from "../lib/sanity/types";
 import { sanityClient } from "sanity:client";
 
 let settings: SiteSettings | null = null;
+let exhibitions: Exhibition[] = [];
+let publications: Publication[] = [];
 
 try {
   settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
+  exhibitions = await sanityClient.fetch(EXHIBITIONS_QUERY);
+  publications = await sanityClient.fetch(PUBLICATIONS_QUERY);
 } catch (err) {
   console.warn("Sanity fetch failed", err);
 }
 
+const bioPlain = settings?.about
+  ? markdownToPlainText(settings.about, 160)
+  : undefined;
+const bioHtml = settings?.about ? renderMarkdown(settings.about) : "";
+
 const siteTitle = settings?.title ?? "Portfolio";
 ---
 
-<Layout title={`About — ${siteTitle}`} siteTitle={siteTitle}>
-  <h1 class="font-display text-4xl text-white md:text-5xl">About</h1>
+<Layout title={`About — ${siteTitle}`} siteTitle={siteTitle} description={bioPlain}>
+  <section class="w-full h-full pt-4 xl:pt-12 px-4 xl:px-12 flex flex-nowrap items-center flex-col xl:flex-row gap-2 xl:gap-12 overflow-y-auto">
+    <aside class="w-full min-h-2/3 xl:min-h-full xl:w-1/2 flex flex-col gap-8 max-h-full overflow-y-auto pt-20 pb-12 pr-8">
+      {
+        bioHtml ? (
+          <h2 class="text-3xl font-bold">Bio</h2>
+          <div class="text-lg text-neutral-900 text-justify" set:html={bioHtml} />
+        ) : (
+          <p class="mt-10 text-neutral-500">Write your bio in Sanity Studio under Site settings → About.</p>
+        )
+      }
 
-  {
-    settings?.about ? (
-      <div class="mt-10 max-w-2xl whitespace-pre-wrap text-lg leading-relaxed text-neutral-300">{settings.about}</div>
-    ) : (
-      <p class="mt-10 text-neutral-500">Write your bio in Sanity Studio under Site settings → About.</p>
-    )
-  }
+      {
+        settings?.socialLinks?.length ? (
+          <h2 class="text-3xl font-bold">Social</h2>
+          <ul class="flex flex-wrap gap-6 text-lg uppercase tracking-wider">
+            {settings.socialLinks.map(
+              (link) =>
+                link.url && (
+                  <li>
+                    <a href={link.url} class="text-neutral-900 transition underline hover:text-neutral-500" rel="noopener noreferrer">
+                      {link.label ?? link.url}
+                    </a>
+                  </li>
+                ),
+            )}
+          </ul>
+        ) : null
+      }
+    </aside>
 
-  {
-    settings?.socialLinks?.length ? (
-      <ul class="mt-14 flex flex-wrap gap-6 text-sm uppercase tracking-widest">
-        {settings.socialLinks.map(
-          (link) =>
-            link.url && (
-              <li>
-                <a href={link.url} class="text-neutral-400 transition hover:text-white" rel="noopener noreferrer">
-                  {link.label ?? link.url}
-                </a>
-              </li>
-            ),
-        )}
-      </ul>
-    ) : null
-  }
+    <section class="w-full max-h-full overflow-y-auto pb-12 pt-4 xl:pt-20 flex flex-col gap-8">
+      {
+        exhibitions.length ? (
+          <>
+            <h2 class="text-3xl font-bold">Expositions</h2>
+            <ul class="flex flex-col gap-2">
+              {exhibitions.map((exhibition) => (
+                <li>
+                    <p class="text-lg font-bold">{exhibition.year}/ {exhibition.location}</p>
+                    <p class="text-lg text-neutral-900">{exhibition.city}, {exhibition.country}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null
+      }
+
+      {
+        publications.length ? (
+          <>
+            <h2 class="text-3xl font-bold">Publications</h2>
+            <ul class="flex flex-col gap-2">
+              {publications.map((publication) => (
+                <li>
+                  <p class="text-lg"><strong>{publication.year}</strong>/</p>
+                  <p class="text-lg text-neutral-900">{publication.title}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null
+      }
+    </section>
+    
+  </section>
 </Layout>

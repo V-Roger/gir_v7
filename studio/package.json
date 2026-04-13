@@ -8,13 +8,18 @@
     "dev": "sanity dev",
     "start": "sanity dev",
     "build": "sanity build",
-    "deploy": "sanity deploy"
+    "deploy": "sanity deploy",
+    "import-galleries": "node --env-file=.env ./scripts/import-galleries.mjs",
+    "publish-imported": "node --env-file=.env ./scripts/publish-api-imported.mjs"
   },
   "dependencies": {
+    "@sanity/client": "^7.20.0",
     "@sanity/vision": "^5.19.0",
+    "easymde": "^2.20.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "sanity": "^5.19.0",
+    "sanity-plugin-markdown": "^8.0.5",
     "styled-components": "^6.3.12"
   },
   "devDependencies": {

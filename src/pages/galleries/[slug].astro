@@ -1,9 +1,11 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import { markdownToPlainText, renderMarkdown } from "../../lib/markdown";
 import { urlFor } from "../../lib/sanity/image";
 import { GALLERY_BY_SLUG_QUERY, GALLERY_SLUGS_QUERY, SITE_SETTINGS_QUERY } from "../../lib/sanity/queries";
 import type { GalleryDetail, SiteSettings } from "../../lib/sanity/types";
 import { sanityClient } from "sanity:client";
+import { Image } from 'astro:assets';
 
 export async function getStaticPaths() {
   let slugs: { slug: string }[] = [];
@@ -36,53 +38,66 @@ const siteTitle = settings?.title ?? "Portfolio";
 if (!gallery) {
   return Astro.redirect("/404");
 }
+
+const descriptionPlain = gallery.description
+  ? markdownToPlainText(gallery.description, 160)
+  : undefined;
+const descriptionHtml = gallery.description ? renderMarkdown(gallery.description) : "";
 ---
 
 <Layout
   title={`${gallery.title} — ${siteTitle}`}
   siteTitle={siteTitle}
-  description={gallery.description}
+  description={descriptionPlain}
 >
-  <nav class="mb-12 text-sm text-neutral-500">
-    <a href="/" class="transition hover:text-white">
-      Work
-    </a>
-    <span class="mx-2 text-neutral-700">/</span>
-    <span class="text-neutral-300">{gallery.title}</span>
-  </nav>
-
-  {gallery.description ? <p class="mb-16 max-w-2xl text-neutral-400">{gallery.description}</p> : null}
-
-  {
-    !gallery.photos?.length ? (
-      <p class="text-neutral-500">This gallery has no photos yet.</p>
-    ) : (
-      <ul class="flex flex-col gap-20">
-        {gallery.photos.map((photo) => (
-          <li class="space-y-3">
-            {photo.image ? (
-              <figure>
-                <img
-                  src={urlFor(photo.image).width(1600).fit("max").auto("format").url()}
-                  alt={photo.alt ?? photo.title ?? "Photograph"}
-                  width={1600}
-                  height={1067}
-                  loading="lazy"
-                  decoding="async"
-                  class="w-full rounded-sm bg-neutral-900"
-                />
-                {(photo.caption || photo.title) && (
-                  <figcaption class="text-sm text-neutral-500">
-                    {photo.title ? <span class="text-neutral-400">{photo.title}</span> : null}
-                    {photo.title && photo.caption ? <span class="mx-2 text-neutral-700">·</span> : null}
-                    {photo.caption ? photo.caption : null}
-                  </figcaption>
-                )}
-              </figure>
-            ) : null}
-          </li>
-        ))}
-      </ul>
-    )
-  }
+  <section class="w-full h-full pt-12 px-4 xl:px-12 flex flex-nowrap items-center flex-col-reverse xl:flex-row gap-12 overflow-y-auto">
+    <aside class="w-full min-h-full xl:w-1/2 flex flex-col gap-8 max-h-full overflow-y-auto pt-20 pb-12 pr-8">
+      <h1 class="text-4xl font-medium">{gallery.title}</h1>
+      {
+        descriptionHtml ? (
+          <div class="text-lg text-neutral-900 text-justify" set:html={descriptionHtml} />
+        ) : null
+      }
+      {
+        gallery.exhibitions?.length ? (
+          <>
+            <h2 class="text-2xl font-bold">Expositions</h2>
+            <ul class="flex flex-col gap-2">
+              {gallery.exhibitions?.map((exhibition) => (
+                <li>
+                  <p class="text-lg font-bold">{exhibition.location}/ {exhibition.year}</p>
+                  <p class="text-lg text-neutral-900">{exhibition.city}, {exhibition.country}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+      ) : null
+      }
+    </aside>
+    <section class="w-full max-h-1/2 xl:max-h-full xl:h-full pb-4 pt-12">
+      {
+        !gallery.photos?.length ? (
+          <p class="text-neutral-500">This gallery has no photos yet.</p>
+        ) : (
+          <ul class="max-h-screen max-w-screen grow h-full shrink-0 overflow-y-auto snap-y snap-mandatory scroll-smooth gap-8">
+            {gallery.photos.map((photo) => (
+              <li class="bg-white h-full w-full space-y-3 snap-center snap-always max-h-full flex flex-col items-end justify-center">
+                {photo.image ? (
+                  <figure class="h-full w-full flex flex-col items-center xl:items-end justify-center gap-2">
+                    <Image
+                      src={urlFor(photo.image).fit("max").auto("format").url()}
+                      alt={photo.alt ?? photo.title ?? "Photograph"}
+                      class="max-h-full max-w-full object-contain"
+                      width={photo.image.metadata?.dimensions?.width ?? 0}
+                      height={photo.image.metadata?.dimensions?.height ?? 0}
+                    />
+                  </figure>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </section>
+  </section>
 </Layout>

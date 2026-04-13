@@ -1,4 +1,5 @@
 import { visionTool } from "@sanity/vision";
+import { markdownSchema } from "sanity-plugin-markdown";
 import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
 
@@ -13,7 +14,7 @@ export default defineConfig({
   title: "Photography portfolio",
   projectId,
   dataset,
-  plugins: [structureTool({ structure }), visionTool()],
+  plugins: [structureTool({ structure }), visionTool(), markdownSchema()],
   schema: {
     types: schemaTypes,
   },

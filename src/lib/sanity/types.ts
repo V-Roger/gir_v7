@@ -2,13 +2,25 @@
 export interface SanityImage {
   _type?: "image";
   asset?: {
+    _id?: string;
+    url?: string;
     _ref?: string;
     _type?: "reference";
+  };
+  metadata?: {
+    dimensions?: {
+      width?: number;
+      height?: number;
+    };
   };
 }
 
 export interface SiteSettings {
   title?: string;
+  cover?: {
+    image?: SanityImage;
+    alt?: string;
+  };
   tagline?: string;
   about?: string;
   socialLinks?: Array<{ label?: string; url?: string }>;
@@ -40,4 +52,22 @@ export interface GalleryDetail {
   slug: string;
   description?: string;
   photos?: GalleryPhoto[];
+  exhibitions?: Exhibition[];
+}
+
+export interface Exhibition {
+  _id: string;
+  title: string;
+  description?: string;
+  year: string;
+  location?: string;
+  city?: string;
+  country?: string;
+}
+
+export interface Publication {
+  _id: string;
+  title: string;
+  description?: string;
+  year: string;
 }

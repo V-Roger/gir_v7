@@ -12,6 +12,13 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: "cover",
+      title: "Cover",
+      type: "image",
+      options: { hotspot: true },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: "tagline",
       title: "Tagline",
       type: "string",
@@ -19,8 +26,8 @@ export default defineType({
     defineField({
       name: "about",
       title: "About",
-      type: "text",
-      rows: 6,
+      type: "markdown",
+      description: "GitHub-flavored Markdown; supports images via drag-and-drop or paste.",
     }),
     defineField({
       name: "socialLinks",
