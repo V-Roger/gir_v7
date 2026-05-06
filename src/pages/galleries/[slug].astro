@@ -50,7 +50,10 @@ const descriptionHtml = gallery.description ? renderMarkdown(gallery.description
   siteTitle={siteTitle}
   description={descriptionPlain}
 >
-  <section class="w-full h-full pt-12 px-4 xl:px-12 flex flex-nowrap items-center flex-col-reverse xl:flex-row gap-12 overflow-y-auto">
+  <section
+    id="gallery-page-scroll-root"
+    class="w-full h-full pt-12 px-4 xl:px-12 flex flex-nowrap items-center flex-col-reverse xl:flex-row gap-12 overflow-y-auto"
+  >
     <aside class="w-full min-h-full xl:w-1/2 flex flex-col gap-8 max-h-full overflow-y-auto pt-20 pb-12 pr-8">
       <h1 class="text-3xl font-medium">{gallery.title}</h1>
       {
@@ -74,12 +77,15 @@ const descriptionHtml = gallery.description ? renderMarkdown(gallery.description
       ) : null
       }
     </aside>
-    <section class="w-full max-h-1/2 xl:max-h-full xl:h-full pb-4 pt-12">
+    <section id="gallery-photos-section" class="w-full max-h-1/2 xl:max-h-full xl:h-full pb-4 pt-12">
       {
         !gallery.photos?.length ? (
           <p class="text-neutral-500">This gallery has no photos yet.</p>
         ) : (
-          <ul class="max-h-screen max-w-screen grow h-full shrink-0 overflow-y-auto snap-y snap-mandatory scroll-smooth gap-8">
+          <ul
+            id="gallery-photos-list"
+            class="max-h-screen max-w-screen grow h-full shrink-0 overflow-y-auto snap-y snap-mandatory scroll-smooth gap-8"
+          >
             {gallery.photos.map((photo) => (
               <li class="bg-white h-full w-full space-y-3 snap-center snap-always max-h-full flex flex-col items-end justify-center">
                 {photo.image ? (
@@ -100,4 +106,17 @@ const descriptionHtml = gallery.description ? renderMarkdown(gallery.description
       }
     </section>
   </section>
+
+  <script is:inline>
+    (function () {
+      function resetMobileGalleryPosition() {
+        if (!window.matchMedia("(max-width: 1279px)").matches) return;
+        var photosSection = document.getElementById("gallery-photos-section");
+        if (photosSection) photosSection.scrollIntoView({ block: "start" });
+      }
+
+      resetMobileGalleryPosition();
+      window.addEventListener("pageshow", resetMobileGalleryPosition);
+    })();
+  </script>
 </Layout>
