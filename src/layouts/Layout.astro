@@ -35,10 +35,10 @@ const { title = "Portfolio", description, siteTitle = "Portfolio" } = Astro.prop
       <a href="/" class="h-full flex items-center justify-center font-display text-xl tracking-tight transition mb-1">
         {siteTitle}&nbsp;/
       </a>
-      <nav class="h-full flex flex-nowrap items-center justify-center gap-4 text-sm font-medium uppercase tracking-widest">
-        <a href="/work" class="transition">Portfolio</a>
-        <a href="/about" class="transition">Bio</a>
-        <a href="https://shop.virgil-roger.photography" target="_blank" class="transition">Shop</a>
+      <nav class="h-full grow flex flex-nowrap items-center justify-start gap-4 tracking-wider font-medium text-neutral-500">
+        <a href="/work" class={`transition uppercase hover:text-neutral-900 ${Astro.url.pathname === "/work" ? "text-neutral-900" : ""}`}>portfolio</a>
+        <a href="/about" class={`transition uppercase hover:text-neutral-900 ${Astro.url.pathname === "/about" ? "text-neutral-900" : ""}`}>bio</a>
+        <a href="https://shop.virgil-roger.photography" target="_blank" class="transition uppercase hover:text-neutral-900">shop</a>
       </nav>
     </header>
     <main id="main" class="h-full w-full">

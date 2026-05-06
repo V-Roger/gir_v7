@@ -29,7 +29,7 @@ const defaultHref = defaultGallery ? `/galleries/${defaultGallery.slug}` : "#";
 <Layout title={pageTitle} siteTitle={siteTitle} description={settings?.tagline}>
   <section class="w-full h-full pt-12 px-4 xl:px-12 flex flex-nowrap items-center flex-col xl:flex-row gap-12 overflow-y-auto">
     <aside class="w-full h-full xl:w-1/2 flex flex-col gap-8 overflow-y-auto pt-20 pb-12 pr-8">
-      <ul class="flex flex-col items-end gap-6 text-4xl font-medium">
+      <ul class="flex flex-col items-end gap-6 text-3xl font-medium">
         {
           galleries.map((gallery) => {
             const previewUrl = gallery.cover?.image
@@ -40,7 +40,7 @@ const defaultHref = defaultGallery ? `/galleries/${defaultGallery.slug}` : "#";
               <li class="text-right">
                 <a
                   href={`/galleries/${gallery.slug}`}
-                  class="work-gallery-preview-trigger transition hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+                  class="work-gallery-preview-trigger transition hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
                   {...(previewUrl ? { "data-preview-url": previewUrl, "data-preview-alt": previewAlt } : {})}
                 >
                   {gallery.title}
@@ -63,7 +63,7 @@ const defaultHref = defaultGallery ? `/galleries/${defaultGallery.slug}` : "#";
             id="work-preview-image"
             src={defaultPreviewUrl}
             alt={defaultPreviewAlt}
-            class="max-h-full max-w-full object-contain transition-opacity duration-200"
+            class="max-h-full max-w-full object-contain"
             width={defaultPreviewImage?.metadata?.dimensions?.width ?? 0}
             height={defaultPreviewImage?.metadata?.dimensions?.height ?? 0}
           />
