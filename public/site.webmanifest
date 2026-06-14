@@ -1,0 +1,14 @@
+{
+  "name": "Virgil ROGER",
+  "short_name": "VR",
+  "icons": [
+    {
+      "src": "/logo_vr.png",
+      "sizes": "300x200",
+      "type": "image/png"
+    }
+  ],
+  "display": "standalone",
+  "theme_color": "#1a1a1a",
+  "background_color": "#1a1a1a"
+}
