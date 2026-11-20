@@ -16,6 +16,14 @@ export default defineType({
       title: "Cover",
       type: "image",
       options: { hotspot: true },
+      fields: [
+        defineField({
+          name: "alt",
+          title: "Alternative text",
+          type: "string",
+          description: "Describe the cover photo for screen readers and search engines.",
+        }),
+      ],
       validation: (Rule) => Rule.required(),
     }),
     defineField({

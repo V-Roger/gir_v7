@@ -9,6 +9,7 @@ export default defineType({
       name: "title",
       title: "Title",
       type: "string",
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "description",
@@ -20,6 +21,7 @@ export default defineType({
       name: "year",
       title: "Year",
       type: "string",
+      validation: (Rule) => Rule.required(),
     }),
   ],
 });

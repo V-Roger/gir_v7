@@ -1,32 +1,24 @@
 ---
+import SanityImage from "../components/SanityImage.astro";
 import Layout from "../layouts/Layout.astro";
-import { urlFor } from "../lib/sanity/image";
-import { SITE_SETTINGS_QUERY } from "../lib/sanity/queries";
-import type { SiteSettings } from "../lib/sanity/types";
-import { sanityClient } from "sanity:client";
+import { getSiteSettings, homeTitleOf, siteTitleOf } from "../lib/sanity/fetch";
 
-let settings: SiteSettings | null = null;
-
-try {
-  settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
-} catch (err) {
-  console.warn("Sanity fetch failed — check PUBLIC_SANITY_PROJECT_ID and dataset.", err);
-}
-
-const siteTitle = settings?.title ?? "Portfolio";
-const pageTitle = settings?.tagline ? `${siteTitle} — ${settings.tagline}` : siteTitle;
+const settings = await getSiteSettings();
+const siteTitle = siteTitleOf(settings);
 ---
 
-<Layout title={pageTitle} siteTitle={siteTitle} description={settings?.tagline}>
-  {settings?.cover?.image ? (
-    <figure class="h-full w-full flex flex-col items-center justify-center xl:items-end p-4 xl:p-40">
-      <img
-        src={urlFor(settings.cover.image).fit("max").auto("format").url()}
-        alt={settings.cover.alt ?? "Virgil ROGER"}
-        loading="lazy"
-        decoding="async"
-        class="max-h-full max-w-full object-contain"
-      />
-    </figure>
-  ) : null}  
+<Layout title={homeTitleOf(settings)} siteTitle={siteTitle} description={settings?.tagline}>
+  {
+    settings?.cover && (
+      <figure class="h-full w-full flex flex-col items-center justify-center xl:items-end p-4 xl:p-40">
+        <SanityImage
+          image={settings.cover}
+          alt={settings.coverAlt ?? siteTitle}
+          sizes="(min-width: 1280px) calc(100vw - 20rem), calc(100vw - 2rem)"
+          priority
+          class="max-h-full max-w-full object-contain"
+        />
+      </figure>
+    )
+  }
 </Layout>

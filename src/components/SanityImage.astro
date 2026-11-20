@@ -1,0 +1,26 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { imageAttrs } from "../lib/sanity/image";
+import type { SanityImage as SanityImageData } from "../lib/sanity/types";
+
+interface Props extends Omit<HTMLAttributes<"img">, "src" | "srcset" | "sizes" | "width" | "height"> {
+  image: SanityImageData;
+  alt: string;
+  /** Rendered size hint for the browser, e.g. `"(min-width: 1280px) 50vw, 100vw"`. */
+  sizes?: string;
+  /** Use for the page's main (LCP) image: loads eagerly at high priority. */
+  priority?: boolean;
+}
+
+const { image, alt, sizes, priority = false, ...rest } = Astro.props;
+const attrs = imageAttrs(image, { sizes });
+---
+
+<img
+  {...attrs}
+  alt={alt}
+  loading={priority ? "eager" : "lazy"}
+  fetchpriority={priority ? "high" : "auto"}
+  decoding="async"
+  {...rest}
+/>

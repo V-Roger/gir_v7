@@ -1,10 +1,29 @@
-/** Singleton site settings document id used in Studio structure. */
+/**
+ * Image projection: keeps crop/hotspot for the URL builder and only the asset metadata we use.
+ * Spread into a field projection, e.g. `image{ ${IMAGE_FIELDS} }`.
+ */
+const IMAGE_FIELDS = `
+  _type,
+  crop,
+  hotspot,
+  asset->{ _id, metadata{ dimensions, lqip } }
+`;
+
+const EXHIBITION_FIELDS = `
+  _id,
+  title,
+  description,
+  year,
+  location,
+  city,
+  country
+`;
+
+/** The `siteSettings` singleton (see `studio/structure.ts`). */
 export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{
   title,
-  "cover": select(defined(cover) => {
-    "image": cover,
-    "alt": cover.alt
-  }),
+  cover{ ${IMAGE_FIELDS} },
+  "coverAlt": cover.alt,
   tagline,
   about,
   socialLinks
@@ -14,19 +33,14 @@ export const GALLERIES_INDEX_QUERY = `*[_type == "gallery"] | order(priority asc
   _id,
   title,
   "slug": slug.current,
-  description,
-  priority,
   "cover": photos[0]->{
-    "image": image.asset->{
-      _id,
-      url,
-      metadata
-    },
+    image{ ${IMAGE_FIELDS} },
     alt
   }
 }`;
 
-export const GALLERY_BY_SLUG_QUERY = `*[_type == "gallery" && slug.current == $slug][0]{
+/** All galleries with full detail — used once by `getStaticPaths`. */
+export const GALLERIES_DETAIL_QUERY = `*[_type == "gallery" && defined(slug.current)]{
   _id,
   title,
   "slug": slug.current,
@@ -34,38 +48,11 @@ export const GALLERY_BY_SLUG_QUERY = `*[_type == "gallery" && slug.current == $s
   "photos": photos[]->{
     _id,
     title,
-    "image": image.asset->{
-      _id,
-      url,
-      metadata
-    },
+    image{ ${IMAGE_FIELDS} },
     alt,
-    caption,
-    dateTaken
+    caption
   },
-  "exhibitions": exhibitions[]->{
-    _id,
-    title,
-    description,
-    year,
-    location,
-    city,
-    country
-  }
-}`;
-
-export const GALLERY_SLUGS_QUERY = `*[_type == "gallery" && defined(slug.current)]{
-  "slug": slug.current
-}`;
-
-export const EXHIBITIONS_BY_GALLERY_ID_QUERY = `*[_type == "exhibition" && references($galleryId)] {
-  _id,
-  title,
-  description,
-  year,
-  location,
-  city,
-  country
+  "exhibitions": exhibitions[]->{ ${EXHIBITION_FIELDS} }
 }`;
 
 export const PUBLICATIONS_QUERY = `*[_type == "publication"] | order(year desc) {
@@ -75,12 +62,4 @@ export const PUBLICATIONS_QUERY = `*[_type == "publication"] | order(year desc) 
   year
 }`;
 
-export const EXHIBITIONS_QUERY = `*[_type == "exhibition"] | order(year desc) {
-  _id,
-  title,
-  description,
-  year,
-  location,
-  city,
-  country
-}`;
+export const EXHIBITIONS_QUERY = `*[_type == "exhibition"] | order(year desc) { ${EXHIBITION_FIELDS} }`;
