@@ -57,6 +57,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { parse as parseYaml } from "yaml";
 import {
+  IMPORT_SOURCE,
   draftId,
   galleryIdFor,
   makeClient,
@@ -453,7 +454,11 @@ async function importGallery(client, dir, opts) {
       continue;
     }
 
-    const asset = await client.assets.upload("image", image.buffer, { filename: image.filename });
+    const asset = await client.assets.upload("image", image.buffer, {
+      filename: image.filename,
+      // Lets cleanup-imports.mjs recognise files left behind if the import fails after uploading.
+      source: { name: IMPORT_SOURCE, id: photoId },
+    });
     const photo = {
       _id: photoId,
       _type: "photo",
