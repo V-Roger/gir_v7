@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Jost", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Jost", ui-serif, Georgia, serif;
+  /* --font-jost is provided by Astro's Fonts API (astro.config.mjs) */
+  --font-sans: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -15,33 +16,41 @@
   }
 }
 
-/* Sanity markdown field output on gallery pages */
+/* Rendered Markdown from Sanity (bio, gallery descriptions) */
 @layer components {
-  .gallery-description > :first-child {
+  .markdown > :first-child {
     margin-top: 0;
   }
 
-  .gallery-description > :last-child {
+  .markdown > :last-child {
     margin-bottom: 0;
   }
 
-  .gallery-description p {
+  .markdown p {
     margin-top: 0.75em;
     margin-bottom: 0.75em;
   }
 
-  .gallery-description a {
+  .markdown a {
     text-decoration: underline;
     text-underline-offset: 2px;
   }
 
-  .gallery-description ul,
-  .gallery-description ol {
+  .markdown ul,
+  .markdown ol {
     margin: 0.5em 0;
     padding-left: 1.35em;
   }
 
-  .gallery-description li {
+  .markdown ul {
+    list-style: disc;
+  }
+
+  .markdown ol {
+    list-style: decimal;
+  }
+
+  .markdown li {
     margin: 0.25em 0;
   }
 }

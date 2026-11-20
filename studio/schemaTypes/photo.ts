@@ -18,6 +18,12 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: "alt",
+      title: "Alternative text",
+      type: "string",
+      description: "Describe the photo for screen readers and search engines.",
+    }),
+    defineField({
       name: "caption",
       title: "Caption",
       type: "string",

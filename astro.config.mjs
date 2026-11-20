@@ -1,7 +1,7 @@
 // @ts-check
 import sanity from "@sanity/astro";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import { loadEnv } from "vite";
 
 // Node does not load .env for this file; mirror Vite/Astro env resolution for integrations.
@@ -10,6 +10,18 @@ Object.assign(process.env, loadEnv(mode, process.cwd(), ""));
 
 // https://astro.build/config
 export default defineConfig({
+  // Self-hosted at build time: no render-blocking request to Google Fonts.
+  fonts: [
+    {
+      provider: fontProviders.google(),
+      name: "Jost",
+      cssVariable: "--font-jost",
+      weights: ["400 700"],
+      styles: ["normal"],
+      subsets: ["latin"],
+      fallbacks: ["ui-sans-serif", "system-ui", "sans-serif"],
+    },
+  ],
   integrations: [
     sanity({
       projectId: process.env.PUBLIC_SANITY_PROJECT_ID || "placeholder00",

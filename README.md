@@ -1,43 +1,46 @@
-# Astro Starter Kit: Minimal
+# gir_v7 — photography portfolio
+
+Static [Astro](https://astro.build) site with content from [Sanity](https://www.sanity.io), deployed on Netlify.
+
+```
+src/
+  components/        SanityImage (responsive <img> via Sanity CDN), ExhibitionList
+  layouts/Layout.astro
+  lib/markdown.ts    Markdown → HTML + plain-text excerpt (meta descriptions)
+  lib/sanity/        fetch helpers, GROQ queries, image URL builder, result types
+  pages/             /, /work, /about, /galleries/[slug], 404
+studio/              Sanity Studio (schemas in studio/schemaTypes)
+```
+
+## Setup
 
 ```sh
-pnpm create astro@latest -- --template minimal
+cp .env.example .env            # fill PUBLIC_SANITY_PROJECT_ID (+ optional PRIVATE_SANITY_READ_TOKEN)
+pnpm install
+pnpm dev                        # http://localhost:4321
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Studio:
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```sh
+cd studio
+cp .env.example .env
+pnpm install
+pnpm dev                        # http://localhost:3333
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Commands
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+| Command        | Action                                     |
+| :------------- | :----------------------------------------- |
+| `pnpm dev`     | Dev server (Sanity errors only warn)       |
+| `pnpm build`   | Static build to `dist/` — **fails** if Sanity can't be reached, so an empty site is never deployed |
+| `pnpm preview` | Serve the built site                       |
+| `pnpm check`   | Type-check `.astro` / `.ts` files          |
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Notes
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- **Images** are resized by the Sanity CDN (`srcset` up to the original width); no build-time image processing.
+- **Fonts**: Jost is downloaded at build time by Astro's Fonts API and self-hosted under `/_astro/fonts/`.
+- **Query result types** live in `src/lib/sanity/types.ts` — keep them in sync with `studio/schemaTypes` when adding fields.
+- **Deploys**: a Sanity webhook can trigger a Netlify build hook on publish (see `.env.example`).

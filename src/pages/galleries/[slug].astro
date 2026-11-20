@@ -1,104 +1,60 @@
 ---
+import type { GetStaticPaths } from "astro";
+import ExhibitionList from "../../components/ExhibitionList.astro";
+import SanityImage from "../../components/SanityImage.astro";
 import Layout from "../../layouts/Layout.astro";
-import { markdownToPlainText, renderMarkdown } from "../../lib/markdown";
-import { urlFor } from "../../lib/sanity/image";
-import { GALLERY_BY_SLUG_QUERY, GALLERY_SLUGS_QUERY, SITE_SETTINGS_QUERY } from "../../lib/sanity/queries";
-import type { GalleryDetail, SiteSettings } from "../../lib/sanity/types";
-import { sanityClient } from "sanity:client";
-import { Image } from 'astro:assets';
+import { renderMarkdown } from "../../lib/markdown";
+import { getSiteSettings, sanityFetch, siteTitleOf } from "../../lib/sanity/fetch";
+import { GALLERIES_DETAIL_QUERY } from "../../lib/sanity/queries";
+import type { GalleryDetail } from "../../lib/sanity/types";
 
-export async function getStaticPaths() {
-  let slugs: { slug: string }[] = [];
-  try {
-    slugs = (await sanityClient.fetch(GALLERY_SLUGS_QUERY)) ?? [];
-  } catch {
-    slugs = [];
-  }
-  return slugs.filter((s) => s.slug).map((s) => ({ params: { slug: s.slug } }));
+// One query for every gallery, instead of one per page.
+export const getStaticPaths = (async () => {
+  const galleries = await sanityFetch<GalleryDetail[]>(GALLERIES_DETAIL_QUERY, []);
+  return galleries.map((gallery) => ({ params: { slug: gallery.slug }, props: { gallery } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  gallery: GalleryDetail;
 }
 
-const { slug } = Astro.params;
-
-if (!slug) {
-  return Astro.redirect("/404");
-}
-
-let settings: SiteSettings | null = null;
-let gallery: GalleryDetail | null = null;
-
-try {
-  settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
-  gallery = await sanityClient.fetch(GALLERY_BY_SLUG_QUERY, { slug });
-} catch (err) {
-  console.warn("Sanity fetch failed", err);
-}
-
-const siteTitle = settings?.title ?? "Portfolio";
-
-if (!gallery) {
-  return Astro.redirect("/404");
-}
-
-const descriptionPlain = gallery.description
-  ? markdownToPlainText(gallery.description, 160)
-  : undefined;
-const descriptionHtml = gallery.description ? renderMarkdown(gallery.description) : "";
+const { gallery } = Astro.props;
+const settings = await getSiteSettings();
+const siteTitle = siteTitleOf(settings);
+const description = renderMarkdown(gallery.description);
+const photos = gallery.photos?.filter((photo) => photo.image) ?? [];
 ---
 
 <Layout
   title={`${gallery.title} — ${siteTitle}`}
   siteTitle={siteTitle}
-  description={descriptionPlain}
+  description={description.excerpt || undefined}
 >
   <section
-    id="gallery-page-scroll-root"
     class="w-full h-full pt-12 px-4 xl:px-12 flex flex-nowrap items-center flex-col-reverse xl:flex-row gap-12 overflow-y-auto"
   >
     <aside class="w-full min-h-full xl:w-1/2 flex flex-col gap-8 max-h-full overflow-y-auto pt-20 pb-12 pr-8">
       <h1 class="text-3xl font-medium">{gallery.title}</h1>
-      {
-        descriptionHtml ? (
-          <div class="text-lg text-neutral-900 text-justify" set:html={descriptionHtml} />
-        ) : null
-      }
-      {
-        gallery.exhibitions?.length ? (
-          <>
-            <h2 class="text-2xl font-bold">Expositions</h2>
-            <ul class="flex flex-col gap-2">
-              {gallery.exhibitions?.map((exhibition) => (
-                <li>
-                  <p class="text-lg font-bold">{exhibition.location}/ {exhibition.year}</p>
-                  <p class="text-lg text-neutral-900">{exhibition.city}, {exhibition.country}</p>
-                </li>
-              ))}
-            </ul>
-          </>
-      ) : null
-      }
+      {description.html && <div class="markdown text-lg text-neutral-900 text-justify" set:html={description.html} />}
+      <ExhibitionList exhibitions={gallery.exhibitions ?? []} headingClass="text-2xl font-bold" />
     </aside>
     <section id="gallery-photos-section" class="w-full max-h-1/2 xl:max-h-full xl:h-full pb-4 pt-12">
       {
-        !gallery.photos?.length ? (
-          <p class="text-neutral-500">This gallery has no photos yet.</p>
+        photos.length === 0 ? (
+          <p class="text-neutral-500">Cette série ne contient pas encore de photos.</p>
         ) : (
-          <ul
-            id="gallery-photos-list"
-            class="max-h-screen max-w-screen grow h-full shrink-0 overflow-y-auto snap-y snap-mandatory scroll-smooth gap-8"
-          >
-            {gallery.photos.map((photo) => (
-              <li class="bg-white h-full w-full space-y-3 snap-center snap-always max-h-full flex flex-col items-end justify-center">
-                {photo.image ? (
-                  <figure class="h-full w-full flex flex-col items-center xl:items-end justify-center gap-2">
-                    <Image
-                      src={urlFor(photo.image).fit("max").auto("format").url()}
-                      alt={photo.alt ?? photo.title ?? "Photograph"}
-                      class="max-h-full max-w-full object-contain"
-                      width={photo.image.metadata?.dimensions?.width ?? 0}
-                      height={photo.image.metadata?.dimensions?.height ?? 0}
-                    />
-                  </figure>
-                ) : null}
+          <ul class="max-h-screen max-w-screen grow h-full shrink-0 overflow-y-auto snap-y snap-mandatory scroll-smooth flex flex-col gap-8">
+            {photos.map((photo, index) => (
+              <li class="bg-white h-full w-full shrink-0 snap-center snap-always max-h-full flex flex-col items-end justify-center">
+                <figure class="h-full w-full flex flex-col items-center xl:items-end justify-center gap-2">
+                  <SanityImage
+                    image={photo.image!}
+                    alt={photo.alt ?? photo.title ?? ""}
+                    sizes="(min-width: 1280px) 50vw, 100vw"
+                    priority={index === 0}
+                    class="max-h-full max-w-full object-contain"
+                  />
+                </figure>
               </li>
             ))}
           </ul>
@@ -106,17 +62,15 @@ const descriptionHtml = gallery.description ? renderMarkdown(gallery.description
       }
     </section>
   </section>
-
-  <script is:inline>
-    (function () {
-      function resetMobileGalleryPosition() {
-        if (!window.matchMedia("(max-width: 1279px)").matches) return;
-        var photosSection = document.getElementById("gallery-photos-section");
-        if (photosSection) photosSection.scrollIntoView({ block: "start" });
-      }
-
-      resetMobileGalleryPosition();
-      window.addEventListener("pageshow", resetMobileGalleryPosition);
-    })();
-  </script>
 </Layout>
+
+<script>
+  // On mobile the photos sit below the text (flex-col-reverse): start the page on the photos.
+  function resetMobileGalleryPosition() {
+    if (!window.matchMedia("(max-width: 1279px)").matches) return;
+    document.getElementById("gallery-photos-section")?.scrollIntoView({ block: "start" });
+  }
+
+  resetMobileGalleryPosition();
+  window.addEventListener("pageshow", resetMobileGalleryPosition);
+</script>

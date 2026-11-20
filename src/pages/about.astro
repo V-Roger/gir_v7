@@ -1,80 +1,58 @@
 ---
+import ExhibitionList from "../components/ExhibitionList.astro";
 import Layout from "../layouts/Layout.astro";
-import { markdownToPlainText, renderMarkdown } from "../lib/markdown";
-import { EXHIBITIONS_QUERY, PUBLICATIONS_QUERY, SITE_SETTINGS_QUERY } from "../lib/sanity/queries";
-import type { Exhibition, Publication, SiteSettings } from "../lib/sanity/types";
-import { sanityClient } from "sanity:client";
+import { renderMarkdown } from "../lib/markdown";
+import { getSiteSettings, sanityFetch, siteTitleOf } from "../lib/sanity/fetch";
+import { EXHIBITIONS_QUERY, PUBLICATIONS_QUERY } from "../lib/sanity/queries";
+import type { Exhibition, Publication } from "../lib/sanity/types";
 
-let settings: SiteSettings | null = null;
-let exhibitions: Exhibition[] = [];
-let publications: Publication[] = [];
+const [settings, exhibitions, publications] = await Promise.all([
+  getSiteSettings(),
+  sanityFetch<Exhibition[]>(EXHIBITIONS_QUERY, []),
+  sanityFetch<Publication[]>(PUBLICATIONS_QUERY, []),
+]);
 
-try {
-  settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
-  exhibitions = await sanityClient.fetch(EXHIBITIONS_QUERY);
-  publications = await sanityClient.fetch(PUBLICATIONS_QUERY);
-} catch (err) {
-  console.warn("Sanity fetch failed", err);
-}
-
-const bioPlain = settings?.about
-  ? markdownToPlainText(settings.about, 160)
-  : undefined;
-const bioHtml = settings?.about ? renderMarkdown(settings.about) : "";
-
-const siteTitle = settings?.title ?? "Portfolio";
+const bio = renderMarkdown(settings?.about);
+const socialLinks = settings?.socialLinks?.filter((link) => link.url) ?? [];
+const siteTitle = siteTitleOf(settings);
 ---
 
-<Layout title={`About — ${siteTitle}`} siteTitle={siteTitle} description={bioPlain}>
+<Layout title={`Bio — ${siteTitle}`} siteTitle={siteTitle} description={bio.excerpt || undefined}>
   <section class="w-full h-full pt-4 xl:pt-12 px-4 xl:px-12 flex flex-nowrap items-center flex-col xl:flex-row gap-2 xl:gap-12 overflow-y-auto">
     <aside class="w-full min-h-2/3 xl:min-h-full xl:w-1/2 flex flex-col gap-8 max-h-full overflow-y-auto pt-20 pb-12 pr-8">
+      <h1 class="sr-only">{siteTitle}</h1>
       {
-        bioHtml ? (
-          <h2 class="text-3xl font-bold">Bio</h2>
-          <div class="text-lg text-neutral-900 text-justify" set:html={bioHtml} />
-        ) : (
-          <p class="mt-10 text-neutral-500">Write your bio in Sanity Studio under Site settings → About.</p>
+        bio.html && (
+          <>
+            <h2 class="text-3xl font-bold">Bio</h2>
+            <div class="markdown text-lg text-neutral-900 text-justify" set:html={bio.html} />
+          </>
         )
       }
 
       {
-        settings?.socialLinks?.length ? (
-          <h2 class="text-3xl font-bold">Social</h2>
-          <ul class="flex flex-wrap gap-6 text-lg uppercase tracking-wider">
-            {settings.socialLinks.map(
-              (link) =>
-                link.url && (
-                  <li>
-                    <a href={link.url} class="text-neutral-900 transition underline hover:text-neutral-500" rel="noopener noreferrer">
-                      {link.label ?? link.url}
-                    </a>
-                  </li>
-                ),
-            )}
-          </ul>
-        ) : null
-      }
-    </aside>
-
-    <section class="w-full max-h-full overflow-y-auto pb-12 pt-4 xl:pt-20 flex flex-col gap-8">
-      {
-        exhibitions.length ? (
+        socialLinks.length > 0 && (
           <>
-            <h2 class="text-3xl font-bold">Expositions</h2>
-            <ul class="flex flex-col gap-2">
-              {exhibitions.map((exhibition) => (
+            <h2 class="text-3xl font-bold">Social</h2>
+            <ul class="flex flex-wrap gap-6 text-lg uppercase tracking-wider">
+              {socialLinks.map((link) => (
                 <li>
-                    <p class="text-lg font-bold">{exhibition.year}/ {exhibition.location}</p>
-                    <p class="text-lg text-neutral-900">{exhibition.city}, {exhibition.country}</p>
+                  <a href={link.url} class="text-neutral-900 transition underline hover:text-neutral-500" rel="noopener noreferrer">
+                    {link.label ?? link.url}
+                  </a>
                 </li>
               ))}
             </ul>
           </>
-        ) : null
+        )
       }
+    </aside>
+
+    <section class="w-full max-h-full overflow-y-auto pb-12 pt-4 xl:pt-20 flex flex-col gap-8">
+      <ExhibitionList exhibitions={exhibitions} />
 
       {
-        publications.length ? (
+        publications.length > 0 && (
           <>
             <h2 class="text-3xl font-bold">Publications</h2>
             <ul class="flex flex-col gap-2">
@@ -86,9 +64,8 @@ const siteTitle = settings?.title ?? "Portfolio";
               ))}
             </ul>
           </>
-        ) : null
+        )
       }
     </section>
-    
   </section>
 </Layout>

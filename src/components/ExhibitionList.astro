@@ -1,0 +1,32 @@
+---
+import type { Exhibition } from "../lib/sanity/types";
+
+interface Props {
+  exhibitions: Exhibition[];
+  /** Heading level for the section title. */
+  headingLevel?: "h2" | "h3";
+  headingClass?: string;
+}
+
+const { exhibitions, headingLevel: Heading = "h2", headingClass = "text-3xl font-bold" } = Astro.props;
+---
+
+{
+  exhibitions.length > 0 && (
+    <>
+      <Heading class={headingClass}>Expositions</Heading>
+      <ul class="flex flex-col gap-2">
+        {exhibitions.map((exhibition) => {
+          const heading = [exhibition.year, exhibition.location ?? exhibition.title].filter(Boolean).join("/ ");
+          const place = [exhibition.city, exhibition.country].filter(Boolean).join(", ");
+          return (
+            <li>
+              {heading && <p class="text-lg font-bold">{heading}</p>}
+              {place && <p class="text-lg text-neutral-900">{place}</p>}
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  )
+}
