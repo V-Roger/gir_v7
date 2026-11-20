@@ -43,9 +43,9 @@ const photos = gallery.photos?.filter((photo) => photo.image) ?? [];
         photos.length === 0 ? (
           <p class="text-neutral-500">Cette série ne contient pas encore de photos.</p>
         ) : (
-          <ul class="max-h-screen max-w-screen grow h-full shrink-0 overflow-y-auto snap-y snap-mandatory scroll-smooth gap-8">
+          <ul class="max-h-screen max-w-screen grow h-full shrink-0 overflow-y-auto snap-y snap-mandatory scroll-smooth flex flex-col gap-8">
             {photos.map((photo, index) => (
-              <li class="bg-white h-full w-full space-y-3 snap-center snap-always max-h-full flex flex-col items-end justify-center">
+              <li class="bg-white h-full w-full shrink-0 snap-center snap-always max-h-full flex flex-col items-end justify-center">
                 <figure class="h-full w-full flex flex-col items-center xl:items-end justify-center gap-2">
                   <SanityImage
                     image={photo.image!}
