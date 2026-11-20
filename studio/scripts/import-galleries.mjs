@@ -237,7 +237,7 @@ async function readSidecar(dir, warn) {
     try {
       data = parseYaml(match[1]) ?? {};
     } catch (err) {
-      throw new Error(`${SIDECAR}: invalid front matter — ${err.message}`);
+      throw new Error(`${SIDECAR}: invalid front matter — ${err.message}`, { cause: err });
     }
     if (typeof data !== "object" || Array.isArray(data)) {
       throw new Error(`${SIDECAR}: front matter must be "key: value" lines.`);
