@@ -28,6 +28,9 @@ export default defineConfig({
       dataset: process.env.PUBLIC_SANITY_DATASET || "production",
       useCdn: false,
       apiVersion: "2024-01-01",
+      // Only published content. Without this, a token makes the API also return drafts
+      // (the "raw" default before API v2025-02-19), so unpublished galleries would go live.
+      perspective: "published",
       // Viewer token: see PRIVATE_SANITY_READ_TOKEN in .env.example.
       ...(process.env.PRIVATE_SANITY_READ_TOKEN
         ? { token: process.env.PRIVATE_SANITY_READ_TOKEN }
