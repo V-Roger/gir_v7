@@ -39,5 +39,10 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      // Keep vendor prefixes Safari 16.4–17 still needs (e.g. -webkit-backdrop-filter for the
+      // header blur); Vite 8's CSS minifier drops them with its default targets.
+      cssTarget: ["chrome111", "edge111", "firefox114", "safari16.4", "ios16.4"],
+    },
   },
 });

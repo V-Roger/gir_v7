@@ -3,7 +3,7 @@ command = "pnpm build"
 publish = "dist"
 
 [build.environment]
-NODE_VERSION = "22"
+NODE_VERSION = "24"
 
 # Fingerprinted build assets (CSS, JS, fonts) never change — cache them forever.
 [[headers]]
